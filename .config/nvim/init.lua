@@ -28,19 +28,24 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true, opts = ...},
-    {'mg979/vim-visual-multi'},
-    {'williamboman/mason.nvim'},
-    {'williamboman/mason-lspconfig.nvim'},
-    {'VonHeikemen/lsp-zero.nvim', branch = 'v3.x'},
-    {'neovim/nvim-lspconfig'},
-    {'hrsh7th/cmp-nvim-lsp'},
-    {'hrsh7th/nvim-cmp'},
-    {'L3MON4D3/LuaSnip'},
-    {'nvim-treesitter/nvim-treesitter'},
-    {'mbbill/undotree'},
-    {'nvim-telescope/telescope.nvim', branch = '0.1.x',
-      dependencies = { 'nvim-lua/plenary.nvim' }},
+    { "ellisonleao/gruvbox.nvim",         priority = 1000, config = true, opts = ... },
+    { 'mg979/vim-visual-multi' },
+    { 'williamboman/mason.nvim' },
+    { 'williamboman/mason-lspconfig.nvim' },
+    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
+    { 'neovim/nvim-lspconfig' },
+    { 'hrsh7th/cmp-nvim-lsp' },
+    { 'hrsh7th/cmp-buffer' },
+    { 'hrsh7th/nvim-cmp' },
+    { 'hrsh7th/cmp-path' },
+    { 'L3MON4D3/LuaSnip' },
+    { 'nvim-treesitter/nvim-treesitter' },
+    { 'mbbill/undotree' },
+    {
+        'nvim-telescope/telescope.nvim',
+        branch = '0.1.x',
+        dependencies = { 'nvim-lua/plenary.nvim' }
+    },
     {
         "iamcco/markdown-preview.nvim",
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
@@ -55,39 +60,54 @@ vim.cmd([[colorscheme gruvbox]])
 local lsp_zero = require('lsp-zero')
 lsp_zero.preset('recommended')
 lsp_zero.on_attach(function(client, bufnr)
-  lsp_zero.default_keymaps({buffer = bufnr})
+    lsp_zero.default_keymaps({ buffer = bufnr })
 end)
 lsp_zero.setup()
+
 require('mason').setup({})
+
 require('mason-lspconfig').setup({
-  ensure_installed = {},
-  handlers = {
-    lsp_zero.default_setup,
-  },
+    ensure_installed = {},
+    handlers = {
+        lsp_zero.default_setup,
+    },
 })
 
-require'nvim-treesitter.configs'.setup {
-  -- A list of parser names, or "all"
-  ensure_installed = { "javascript", "typescript", "c", "lua", "rust", "python",
-                        "gdscript", "html", "css", "sql", "markdown" },
+local cmp = require('cmp')
+local cmp_format = lsp_zero.cmp_format({ details = true })
+cmp.setup({
+    sources = {
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' },
+        { name = 'buffer' },
+        { name = 'path' },
+    },
+    --- (Optional) Show source name in completion menu
+    formatting = cmp_format,
+})
 
-  -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
+require 'nvim-treesitter.configs'.setup {
+    -- A list of parser names, or "all"
+    ensure_installed = { "javascript", "typescript", "c", "lua", "rust", "python",
+        "gdscript", "html", "css", "sql", "markdown", "org" },
 
-  -- Automatically install missing parsers when entering buffer
-  -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
-  auto_install = true,
+    -- Install parsers synchronously (only applied to `ensure_installed`)
+    sync_install = false,
 
-  highlight = {
-    -- `false` will disable the whole extension
-    enable = true,
+    -- Automatically install missing parsers when entering buffer
+    -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+    auto_install = true,
 
-    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-    -- Using this option may slow down your editor, and you may see some duplicate highlights.
-    -- Instead of true it can also be a list of languages
-    additional_vim_regex_highlighting = false,
-  },
+    highlight = {
+        -- `false` will disable the whole extension
+        enable = true,
+
+        -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+        -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+        -- Using this option may slow down your editor, and you may see some duplicate highlights.
+        -- Instead of true it can also be a list of languages
+        additional_vim_regex_highlighting = false,
+    },
 }
 
 local builtin = require('telescope.builtin')
