@@ -28,17 +28,31 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    { "ellisonleao/gruvbox.nvim",         priority = 1000, config = true, opts = ... },
+    {
+        "ellisonleao/gruvbox.nvim",
+        priority = 1000,
+        config = true,
+        opts = ...
+    },
     { 'mg979/vim-visual-multi' },
+    { 'tpope/vim-fugitive' },
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
-    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
+    {
+        'VonHeikemen/lsp-zero.nvim',
+        branch = 'v3.x'
+    },
     { 'neovim/nvim-lspconfig' },
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/cmp-buffer' },
-    { 'hrsh7th/nvim-cmp' },
     { 'hrsh7th/cmp-path' },
-    { 'L3MON4D3/LuaSnip' },
+    { 'hrsh7th/nvim-cmp' },
+    { 'saadparwaiz1/cmp_luasnip' },
+    {
+        'L3MON4D3/LuaSnip',
+        version = "v2.*",
+        dependencies = { "rafamadriz/friendly-snippets" },
+    },
     { 'nvim-treesitter/nvim-treesitter' },
     { 'mbbill/undotree' },
     {
@@ -48,7 +62,11 @@ require("lazy").setup({
     },
     {
         "iamcco/markdown-preview.nvim",
-        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        cmd = {
+            "MarkdownPreviewToggle",
+            "MarkdownPreview",
+            "MarkdownPreviewStop"
+        },
         ft = { "markdown" },
         build = function() vim.fn["mkdp#util#install"]() end,
     },
@@ -67,29 +85,16 @@ lsp_zero.setup()
 require('mason').setup({})
 
 require('mason-lspconfig').setup({
-    ensure_installed = {},
+    ensure_installed = { 'lua_ls', 'rust_analyzer' },
     handlers = {
         lsp_zero.default_setup,
     },
 })
 
-local cmp = require('cmp')
-local cmp_format = lsp_zero.cmp_format({ details = true })
-cmp.setup({
-    sources = {
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'buffer' },
-        { name = 'path' },
-    },
-    --- (Optional) Show source name in completion menu
-    formatting = cmp_format,
-})
-
 require 'nvim-treesitter.configs'.setup {
     -- A list of parser names, or "all"
-    ensure_installed = { "javascript", "typescript", "c", "lua", "rust", "python",
-        "gdscript", "html", "css", "sql", "markdown", "org" },
+    ensure_installed = { "javascript", "typescript", "c", "lua", "rust",
+        "python", "gdscript", "html", "css", "sql", "markdown", "org" },
 
     -- Install parsers synchronously (only applied to `ensure_installed`)
     sync_install = false,
@@ -110,7 +115,21 @@ require 'nvim-treesitter.configs'.setup {
     },
 }
 
+
 local builtin = require('telescope.builtin')
+
+--- TODO: What is expand?
+vim.keymap.set({ "i" }, "<C-s>e", function() ls.expand() end, { silent = true })
+
+vim.keymap.set({ "i", "s" }, "<C-s>;", function() ls.jump(1) end, { silent = true })
+vim.keymap.set({ "i", "s" }, "<C-s>,", function() ls.jump(-1) end, { silent = true })
+
+vim.keymap.set({ "i", "s" }, "<C-E>", function()
+    if ls.choice_active() then
+        ls.change_choice(1)
+    end
+end, { silent = true })
+
 vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
@@ -118,6 +137,22 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+
+local ls = require("luasnip")
+ls.filetype_extend("javascript", { "jsdoc" })
+local cmp = require('cmp')
+local cmp_format = lsp_zero.cmp_format({ details = true })
+cmp.setup({
+    sources = {
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' },
+        { name = 'buffer' },
+        { name = 'path' },
+    },
+    --- (Optional) Show source name in completion menu
+    formatting = cmp_format,
+})
+require("luasnip.loaders.from_vscode").lazy_load()
 
 -- markdown
 vim.g.mkdp_auto_start = 1
