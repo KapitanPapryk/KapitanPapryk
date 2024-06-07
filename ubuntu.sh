@@ -1,6 +1,6 @@
 sudo apt update
 sudo add-apt-repository ppa:neovim-ppa/unstable
-sudo apt install build-essential btop fish nvim tmux curl git nodejs npm ripgrep
+sudo apt install build-essential btop fish neovim tmux curl git nodejs npm ripgrep
 
 curl -fsSL https://bun.sh/install | bash
 
