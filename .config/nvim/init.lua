@@ -4,7 +4,7 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = false
 vim.opt.incsearch = true
-vim.opt.colorcolumn = "80"
+vim.opt.colorcolumn = "80,120"
 
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
@@ -13,6 +13,18 @@ vim.opt.expandtab = true
 
 vim.opt.smartindent = true
 vim.opt.scrolloff = 8
+
+-- :map [[ ?{<CR>w99[{
+-- :map ][ /}<CR>b99]}
+-- :map ]] j0[[%/{<CR>
+-- :map [] k$][%?}<CR>
+-- rewrite in lua
+-- vim.keymap.set({ "n" }, "[[", function() vim.cmd("normal ?{\<CR>w99[{") end, { silent = true })
+-- vim.keymap.set({ "n" }, "][", function() vim.cmd("normal /}\<CR>b99]}") end, { silent = true })
+-- vim.keymap.set({ "n" }, "]]", function() vim.cmd("normal j0[[%/{\<CR>") end, { silent = true })
+-- vim.keymap.set({ "n" }, "[]", function() vim.cmd("normal k$][%?}\<CR>") end, { silent = true })
+
+
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -43,9 +55,11 @@ require("lazy").setup({
         branch = 'v3.x'
     },
     { 'neovim/nvim-lspconfig' },
+    { 'github/copilot.vim' },
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-path' },
+    { 'hrsh7th/cmp-cmdline' },
     { 'hrsh7th/nvim-cmp' },
     { 'saadparwaiz1/cmp_luasnip' },
     {
@@ -85,7 +99,8 @@ lsp_zero.setup()
 require('mason').setup({})
 
 require('mason-lspconfig').setup({
-    ensure_installed = { 'lua_ls', 'rust_analyzer' },
+    ensure_installed = { 'lua_ls', 'rust_analyzer', 'clangd', 'biome', 'cmake',
+        'dockerls', 'html', 'grammarly', 'zls' },
     handlers = {
         lsp_zero.default_setup,
     },
@@ -151,6 +166,25 @@ cmp.setup({
     },
     --- (Optional) Show source name in completion menu
     formatting = cmp_format,
+})
+cmp.setup.cmdline('/', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+        { name = 'buffer' }
+    }
+})
+cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+        { name = 'path' }
+    }, {
+        {
+            name = 'cmdline',
+            option = {
+                ignore_cmds = { 'Man', '!' }
+            }
+        }
+    })
 })
 require("luasnip.loaders.from_vscode").lazy_load()
 
